@@ -1,3 +1,6 @@
+import random
+import typing
+
 class Node:
     def __init__(self, value, next=None):
         self.value = value
@@ -25,6 +28,49 @@ class LinkedList:
 
         return self
     
+    def delete_position(self, position: int):
+        if position == 0:
+            self.head = self.head.next
+            return self
+        
+        i = 0
+        previous_node = None
+        current_node = self.head
+        while current_node.next is not None:
+            if i == position:
+                previous_node.next = current_node.next
+                break
+            previous_node = current_node
+            current_node = current_node.next
+            i += 1
+        
+        if i < position:
+            raise ValueError(f"Linked list does not have {position} nodes.")
+
+        return self
+
+    def aggregate_nodes(self, agg_func: typing.Callable, init_value: typing.Any):
+        agg_value = init_value
+        current_node = self.head
+        while current_node is not None:
+            agg_value = agg_func(current_node, agg_value)
+            current_node = current_node.next
+        
+        return agg_value
+
+    def count_nodes(self):
+        def _count(node: Node, agg_value: int):
+            return agg_value + 1
+        
+        return self.aggregate_nodes(_count, 0)
+
+    def sum_nodes(self):
+        def _sum(node: Node, agg_value: int):
+            return node.value + agg_value
+        
+        return self.aggregate_nodes(_sum, 0)
+        
+    
     def __str__(self):
         result = ""
         current = self.head
@@ -33,4 +79,11 @@ class LinkedList:
             current = current.next
         return result[:-4]
 
-
+    @classmethod
+    def create_random(cls, nodes: int):
+        ll = cls()
+        for _ in range(nodes):
+            node = Node(random.randint(0, 25))
+            ll.add(node)
+        
+        return ll
