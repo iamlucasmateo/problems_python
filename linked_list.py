@@ -11,14 +11,14 @@ class LinkedList:
     def __init__(self):
         self.head = None
     
-    def add(self, node):
+    def add(self, value: int):
         if self.head is None:
-            self.head = node
+            self.head = Node(value)
         else:
             current = self.head
             while current.next is not None:
                 current = current.next
-            current.next = node
+            current.next = Node(value)
 
         return self
         
@@ -69,6 +69,7 @@ class LinkedList:
             return node.value + agg_value
         
         return self.aggregate_nodes(_sum, 0)
+    
     def reverse(self, in_place: bool = True):
         return self._reverse_in_place() if in_place else self._reverse_copy()
 
@@ -89,24 +90,45 @@ class LinkedList:
 
         return self
 
-    def _reverse_cropy(self):
+    def _reverse_copy(self):
         raise NotImplementedError("Method not implemented")
+
+    def sort(self):
+        current_node = self.head
+        values  = []
+
+        # O(n) memory, time
+        while current_node is not None:
+            values.append(current_node.value)
+            current_node = current_node.next
+        
+        # O(nlogn) time, O(1) memory?
+        values = sorted(values)
+        
+        # O(n) time, memory
+        sorted_ll = LinkedList()
+        for val in values:
+            sorted_ll.add(val)
+        
+        print(values)
+        
+        return sorted_ll
+
     
     def __str__(self):
         result = ""
-        current = self.head
+        current_node = self.head
         i = 0
-        while current is not None and i < 10:
-            result += str(current.value) + " -> "
-            current = current.next
+        while current_node is not None and i < 10:
+            result += str(current_node.value) + " -> "
+            current_node = current_node.next
             i += 1
         return result[:-4]
 
     @classmethod
-    def create_random(cls, nodes: int):
+    def create_random(cls, number_of_nodes: int):
         ll = cls()
-        for _ in range(nodes):
-            node = Node(random.randint(0, 25))
-            ll.add(node)
+        for _ in range(number_of_nodes):
+            ll.add(random.randint(0, 25))
         
         return ll
