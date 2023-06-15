@@ -1,0 +1,12 @@
+K-nary: at most k children per node
+Root: single node with no parent
+Leaf: node with no children
+Depth: max levels between root and all leaves
+Branch: traversal from ancestor node to descendant.
+Should be unique for e.g. binary trees (i.e., you cannot reach the same node from two different paths).
+Complete tree: Every level is complete, except for maybe the final level. The final level should be filled up from left to right.
+Full tree: Every node that is not a leaf has k children.
+Perfect tree: all the leave nodes have the same depth (complete + full)
+Empty tree: no nodes
+Acyclic: doesn't lead back to any given node  
+Directed: edges have a direction (parent-child)
