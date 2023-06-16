@@ -2,6 +2,9 @@ from enum import Enum
 from typing import Any, Callable, List
 
 
+# Takeaway for O(N): calculate the difference with target previously, use a hash table for quick lookup
+
+
 class TwoNumberSumStrategy(Enum):
     NESTED_LOOP = "nested_loop"
     HASH = "hash"

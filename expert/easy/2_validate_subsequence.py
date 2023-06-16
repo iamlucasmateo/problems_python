@@ -1,7 +1,8 @@
 from enum import Enum
 from typing import List
 
-# subsequence: 
+# Takeaway for O(N): loop through sequence and check the subsequence candidate, 
+# keeping track of both indexes simultaneously 
 
 class ValidationStrategy(Enum):
     NESTED_LOOP = "nested_loop"
