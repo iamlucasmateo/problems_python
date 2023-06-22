@@ -1,12 +1,81 @@
+from enum import Enum
+
 class Node:
     def __init__(self, value):
         self.value = value
         self.left = None
         self.right = None
-    
+
+
+class SearchStrategyEnum(str, Enum):
+    DEPTH_FIRST = "DEPTH_FIRST"
+    BREADTH_FIRST = "BREADTH_FIRST"
+
+
+class ImplementationStrategyEnum(str, Enum):
+    ITERATIVE = "ITERATIVE"
+    RECURSIVE = "RECURSIVE"
+
+
 class Tree:
     def __init__(self, root: Node):
         self.root = root
+
+class TreeSearcher:
+    def __init__(self, tree: Tree):
+        self.tree = tree
+
+    def get_values(self):
+        raise NotImplementedError("Must be implemented by subclass.")
+
+
+class TreeSearcherDepthIterative(TreeSearcher):
+    """This is implemented with a Stack DS.
+    
+    It's O(N) T (navigates all nodes once), O(N) (for the stack).
+    """
+    def get_values(self):
+        values = []
+        stack = []
+        current_node = self.tree.root
+        stack.append(current_node)
+        while len(stack) > 0:
+            values.append(current_node.value)
+            if current_node.right is not None:
+                stack.append(current_node.right)
+            if current_node.left is not None:
+                stack.append(current_node.left)
+            current_node = stack.pop()
+        
+        return values
+
+class TreeSearcherDepthRecursive(TreeSearcher):
+    """This uses recursion to implement the stack (i.e., the call stack is the search stack).
+    
+    It's O(N) T (navigates all nodes once), O(N) S (for the stack).
+    """
+    def get_values(self):
+        return self._search_node_values(self.tree.root)
+
+    def _search_node_values(self, node: Node) -> list:
+        left_values = [] if node.left == None else self._search_node_values(node.left)
+        right_values = [] if node.right == None else self._search_node_values(node.right)
+        return [node.value] + left_values + right_values
+
+
+
+class TreeSearcherFactory:
+    def __init__(self, search_strategy: SearchStrategyEnum, implementation_strategy: ImplementationStrategyEnum):
+        self.search_strategy = search_strategy
+        self.implementation_strategy = implementation_strategy
+    
+    def get(self):
+        class_map = {
+            (SearchStrategyEnum.DEPTH_FIRST, ImplementationStrategyEnum.ITERATIVE): TreeSearcherDepthIterative,
+            (SearchStrategyEnum.DEPTH_FIRST, ImplementationStrategyEnum.RECURSIVE): TreeSearcherDepthRecursive,
+        }
+
+        return class_map[(self.search_strategy, self.implementation_strategy)]
 
 
 a = Node("a")
@@ -15,37 +84,35 @@ c = Node("c")
 d = Node("d")
 e = Node("e")
 f = Node("f")
+g = Node("g")
+h = Node("h")
+i = Node("i")
+j = Node("j")
+k = Node("k")
+
 
 a.left = b
 a.right = c
 b.left = d
 b.right = e
-c.right = f
+e.right = j
+d.right = i
+d.left = h
+c.right = g
+c.left = f
+f.right = k 
 
 tree = Tree(root=a)
 
 
-#         a
-#        / \
-#       b   c
-#      / \   \
-#     d   e   f
+#             a
+#        /        \
+#       b           c
+#      /  \       /   \
+#     d    e      f    g
+#    / \    \      \
+#   h   i    j      k
 
-# Depth first: a, b, d, e, c, f
-def get_depth_first_values(tree: Tree):
-    values = []
-    stack = []
-    current_node = tree.root
-    stack.append(current_node)
-    while len(stack) > 0:
-        values.append(current_node.value)
-        if current_node.right is not None:
-            stack.append(current_node.right)
-        if current_node.left is not None:
-            stack.append(current_node.left)
-        current_node = stack.pop()
-    
-    return values
-
-# Breadth first: a, b, c, d, e, f
+# Depth first: a, b, d, h, i, e, j, c, f, k, g
+# Breadth first: ???
 
