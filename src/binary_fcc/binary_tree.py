@@ -1,5 +1,7 @@
 from enum import Enum
 
+from src.linked_list import Queue
+
 class Node:
     def __init__(self, value):
         self.value = value
@@ -32,7 +34,7 @@ class TreeSearcher:
 class TreeSearcherDepthIterative(TreeSearcher):
     """This is implemented with a Stack DS.
     
-    It's O(N) T (navigates all nodes once), O(N) (for the stack).
+    It's O(N) T (navigates all nodes once), O(N) M (for the stack).
     """
     def get_values(self):
         values = []
@@ -64,6 +66,42 @@ class TreeSearcherDepthRecursive(TreeSearcher):
 
 
 
+class TreeSearcherBreadthRecursive(TreeSearcher):
+    def get_values(self):
+        return self._search_node_values(self.tree.root)
+    
+    def _search_node_values(self, node: Node):
+        values = [node.value]
+        if node.left is not None:
+            values.append(node.left.value)
+        if node.right is not None:
+            values.append(node.right.value)
+
+
+
+class TreeSearcherBreadthIterative(TreeSearcher):
+    """Uses a queue DS.
+    
+    O(N) time, O(N) memory (for the queue)
+    """
+    def get_values(self):
+        values = []
+        current_node = self.tree.root
+        queue = Queue()
+        queue.enqueue(current_node)
+        while not queue.is_empty():
+            current_node = queue.dequeue()
+            values.append(current_node.value)
+            
+            if current_node.left is not None:
+                queue.enqueue(current_node.left)
+            if current_node.right is not None:
+                queue.enqueue(current_node.right)
+        
+        return values
+            
+
+
 class TreeSearcherFactory:
     def __init__(self, search_strategy: SearchStrategyEnum, implementation_strategy: ImplementationStrategyEnum):
         self.search_strategy = search_strategy
@@ -73,6 +111,7 @@ class TreeSearcherFactory:
         class_map = {
             (SearchStrategyEnum.DEPTH_FIRST, ImplementationStrategyEnum.ITERATIVE): TreeSearcherDepthIterative,
             (SearchStrategyEnum.DEPTH_FIRST, ImplementationStrategyEnum.RECURSIVE): TreeSearcherDepthRecursive,
+            (SearchStrategyEnum.BREADTH_FIRST, ImplementationStrategyEnum.ITERATIVE): TreeSearcherBreadthIterative,
         }
 
         return class_map[(self.search_strategy, self.implementation_strategy)]
@@ -114,5 +153,5 @@ tree = Tree(root=a)
 #   h   i    j      k
 
 # Depth first: a, b, d, h, i, e, j, c, f, k, g
-# Breadth first: ???
+# Breadth first: a, b, c, d, e, f, g, h, i, j, k
 

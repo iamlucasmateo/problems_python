@@ -1,7 +1,8 @@
 import random
 import typing
 
-class Node:
+
+class LLNode:
     def __init__(self, value, next=None):
         self.value = value
         self.next = next
@@ -13,20 +14,29 @@ class LinkedList:
     
     def add(self, value: int):
         if self.head is None:
-            self.head = Node(value)
+            self.head = LLNode(value)
         else:
             current = self.head
             while current.next is not None:
                 current = current.next
-            current.next = Node(value)
+            current.next = LLNode(value)
 
         return self
+
+    def extract_first(self):
+        if self.head is not None:
+            value = self.head.value
+            self.head = self.head.next
+            return value
         
     def insert(self, node):
         node.next = self.head
         self.head = node
 
         return self
+
+    def is_empty(self) -> bool:
+        return self.head is None
     
     def delete_position(self, position: int):
         if position == 0:
@@ -59,13 +69,13 @@ class LinkedList:
         return agg_value
 
     def count_nodes(self):
-        def _count(node: Node, agg_value: int):
+        def _count(node: LLNode, agg_value: int):
             return agg_value + 1
         
         return self.aggregate_nodes(_count, 0)
 
     def sum_nodes(self):
-        def _sum(node: Node, agg_value: int):
+        def _sum(node: LLNode, agg_value: int):
             return node.value + agg_value
         
         return self.aggregate_nodes(_sum, 0)
@@ -110,7 +120,6 @@ class LinkedList:
         for val in values:
             sorted_ll.add(val)
         
-        print(values)
         
         return sorted_ll
 
@@ -132,3 +141,17 @@ class LinkedList:
             ll.add(random.randint(0, 25))
         
         return ll
+    
+
+class Queue:
+    def __init__(self):
+        self.linked_list = LinkedList()
+    
+    def enqueue(self, value):
+        self.linked_list.add(value)
+    
+    def dequeue(self):
+        return self.linked_list.extract_first()
+
+    def is_empty(self) -> bool:
+        return self.linked_list.is_empty()

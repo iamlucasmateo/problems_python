@@ -3,7 +3,7 @@ from typing import List
 # Takeaway to solve it in O(N): break the array in two parts, keeping track of the two indices with a while loop.
 
 class SquaredSortedArray:
-    """Given a sorted array of (possibly negative) ints, returned the sorted array of itsd squares."""
+    """Given a sorted array of (possibly negative) ints, returned the sorted array of its squares."""
     def __init__(self, array: List[int]):
         self.array = array
     
@@ -16,7 +16,7 @@ class SquaredSortedArray:
                 first_positive_index = i
                 break
 
-        all_ints_have_the_same_sign: int = first_positive_index in [0, None]
+        all_ints_have_the_same_sign: bool = first_positive_index in [0, None]
         # O(N) TS
         if all_ints_have_the_same_sign:
             return [x*x for x in self.array]
@@ -26,8 +26,8 @@ class SquaredSortedArray:
         squared = [] 
         # O(N) T, O(N) S
         while True:            
-            negatives_remaining = negative_index < first_positive_index
-            positives_remaining = positive_index < len(self.array)
+            negatives_remaining: bool = negative_index < first_positive_index
+            positives_remaining: bool = positive_index < len(self.array)
             if not (negatives_remaining or positives_remaining):
                 break
             elif negatives_remaining and positives_remaining:
