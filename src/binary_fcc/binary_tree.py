@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Union
 
 from src.linked_list import Queue
 
@@ -7,6 +8,11 @@ class Node:
         self.value = value
         self.left = None
         self.right = None
+    
+    def __str__(self):
+        left_null = self.left is None
+        right_null = self.right is None 
+        return f"Node. Value: {self.value}. Left null: {left_null}. Right null: {right_null}"
 
 
 class SearchStrategyEnum(str, Enum):
@@ -31,12 +37,37 @@ class TreeSearcher:
         raise NotImplementedError("Must be implemented by subclass.")
 
 
-class TreeSearcherDepthIterative(TreeSearcher):
+class TreeSearcherIterative(TreeSearcher):
+    def _reduce(self):
+        raise NotImplementedError("Must be subclassed.")
+    
+    def get_values(self):
+        return self._reduce(self._reduce_get_values, [])
+
+    def _reduce_get_values(self, value, accum):
+        return accum + [value]
+
+    def sum(self):
+        return self._reduce(self._reduce_sum, 0)
+
+    def _reduce_sum(self, value, accum):
+        return value + accum
+    
+    def min(self):
+        return self._reduce(self._reduce_min, None)
+    
+    def _reduce_min(self, value, accum):
+        if accum == None or value < accum:
+            return value
+        return accum
+
+
+class TreeSearcherDepthIterative(TreeSearcherIterative):
     """This is implemented with a Stack DS.
     
     It's O(N) T (navigates all nodes once), O(N) M (for the stack).
     """
-    def get_values(self):
+    def get_values_full(self):
         values = []
         stack = []
         current_node = self.tree.root
@@ -51,6 +82,32 @@ class TreeSearcherDepthIterative(TreeSearcher):
         
         return values
 
+    def includes(self, value):
+        stack = [self.tree.root]
+        while len(stack) > 0:
+            current_node = stack.pop()
+            if current_node.value == value:
+                return True
+            if current_node.right is not None:
+                stack.append(current_node.right)
+            if current_node.left is not None:
+                stack.append(current_node.left)
+
+        return False
+
+    def _reduce(self, reduce_func, accum):
+        stack = [self.tree.root]
+        while len(stack) > 0:
+            current_node = stack.pop()
+            accum = reduce_func(current_node.value, accum)
+            if current_node.right:
+                stack.append(current_node.right)
+            if current_node.left:
+                stack.append(current_node.left)
+        
+        return accum
+
+
 class TreeSearcherDepthRecursive(TreeSearcher):
     """This uses recursion to implement the stack (i.e., the call stack is the search stack).
     
@@ -64,27 +121,50 @@ class TreeSearcherDepthRecursive(TreeSearcher):
         right_values = [] if node.right == None else self._search_node_values(node.right)
         return [node.value] + left_values + right_values
 
-
-
-class TreeSearcherBreadthRecursive(TreeSearcher):
-    def get_values(self):
-        return self._search_node_values(self.tree.root)
+    def includes(self, value):
+        return self._node_includes(self.tree.root, value)
     
-    def _search_node_values(self, node: Node):
+    def _node_includes(self, node: Node, value):
+        if node is None:
+            return False
+        if node.value == value:
+            return True
+        
+        right_includes = self._node_includes(node.right, value)
+        left_includes = self._node_includes(node.left, value)
+
+        return right_includes or left_includes
+
+    def sum(self):
+        return self._sum_node(self.tree.root)
+
+    def _sum_node(self, node: Node):
+        if node is None:
+            return 0
+        right_sum = self._sum_node(node.right)
+        left_sum = self._sum_node(node.left)
+
+        return node.value + right_sum + left_sum
+
+    def min(self):
+        return self._node_min(self.tree.root)
+    
+    def _node_min(self, node: Node) -> float:
         values = [node.value]
         if node.left is not None:
-            values.append(node.left.value)
+            values.append(self._node_min(node.left))
         if node.right is not None:
-            values.append(node.right.value)
+            values.append(self._node_min(node.right))
+
+        return min(values)
 
 
-
-class TreeSearcherBreadthIterative(TreeSearcher):
+class TreeSearcherBreadthIterative(TreeSearcherIterative):
     """Uses a queue DS.
     
     O(N) time, O(N) memory (for the queue)
     """
-    def get_values(self):
+    def get_values_full(self):
         values = []
         current_node = self.tree.root
         queue = Queue()
@@ -99,7 +179,37 @@ class TreeSearcherBreadthIterative(TreeSearcher):
                 queue.enqueue(current_node.right)
         
         return values
+
+    def _reduce(self, reduce_func, accum):
+        queue = Queue()
+        queue.enqueue(self.tree.root)
+        while not queue.is_empty():
+            current_node = queue.dequeue()
+            if current_node.left is not None:
+                queue.enqueue(current_node.left)
+            if current_node.right is not None:
+                queue.enqueue(current_node.right)
+            accum = reduce_func(current_node.value, accum)
+
+        
+        return accum
+    
+    def includes(self, value):
+        current_node = self.tree.root
+        queue = Queue()
+        queue.enqueue(current_node)
+        while not queue.is_empty():
+            current_node = queue.dequeue()
+            if current_node.value == value:
+                return True 
             
+            if current_node.left is not None:
+                queue.enqueue(current_node.left)
+            if current_node.right is not None:
+                queue.enqueue(current_node.right)
+        
+        return False
+
 
 
 class TreeSearcherFactory:
@@ -155,3 +265,63 @@ tree = Tree(root=a)
 # Depth first: a, b, d, h, i, e, j, c, f, k, g
 # Breadth first: a, b, c, d, e, f, g, h, i, j, k
 
+
+a_n = Node(1)
+b_n = Node(2)
+c_n = Node(3)
+d_n = Node(4)
+e_n = Node(7)
+f_n = Node(12)
+g_n = Node(5)
+h_n = Node(3)
+i_n = Node(8)
+j_n = Node(2)
+k_n = Node(-1)
+
+
+a_n.left = b_n
+a_n.right = c_n
+b_n.left = d_n
+b_n.right = e_n
+e_n.right = j_n
+d_n.right = i_n
+d_n.left = h_n
+c_n.right = g_n
+c_n.left = f_n
+f_n.right = k_n 
+
+tree_n = Tree(root=a_n)
+
+
+if __name__ == "__main__":
+    includes_g = TreeSearcherBreadthIterative(tree).includes("g")
+    print(includes_g)
+    includes_z = TreeSearcherBreadthIterative(tree).includes("z")
+    print(includes_z)
+
+    includes_g = TreeSearcherDepthIterative(tree).includes("g")
+    print(includes_g)
+    includes_z = TreeSearcherDepthIterative(tree).includes("z")
+    print(includes_z)
+
+    includes_g = TreeSearcherDepthRecursive(tree).includes("g")
+    print(includes_g)
+    includes_z = TreeSearcherDepthRecursive(tree).includes("z")
+    print(includes_z)
+
+    suma = TreeSearcherDepthRecursive(tree_n).sum()
+    print(suma)
+    suma = TreeSearcherBreadthIterative(tree_n).sum()
+    print(suma)
+    suma = TreeSearcherDepthIterative(tree_n).sum()
+    print(suma)
+    values = TreeSearcherBreadthIterative(tree).get_values()
+    print(values)
+    values = TreeSearcherDepthIterative(tree).get_values()
+    print(values)
+    _min = TreeSearcherBreadthIterative(tree_n).min()
+    print(_min)
+    _min = TreeSearcherDepthIterative(tree_n).min()
+    print(_min)
+    _min = TreeSearcherDepthRecursive(tree_n).min()
+    print(_min)
