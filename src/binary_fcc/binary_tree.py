@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Union
+from typing import Callable, List, Union
 
 from src.linked_list import Queue
 
@@ -44,21 +44,21 @@ class TreeSearcherIterative(TreeSearcher):
     def get_values(self):
         return self._reduce(self._reduce_get_values, [])
 
-    def _reduce_get_values(self, value, accum):
-        return accum + [value]
+    def _reduce_get_values(self, node: Node, accum):
+        return accum + [node.value]
 
     def sum(self):
         return self._reduce(self._reduce_sum, 0)
 
-    def _reduce_sum(self, value, accum):
-        return value + accum
+    def _reduce_sum(self, node: Node, accum):
+        return node.value + accum
     
     def min(self):
         return self._reduce(self._reduce_min, None)
     
-    def _reduce_min(self, value, accum):
-        if accum == None or value < accum:
-            return value
+    def _reduce_min(self, node: Node, accum):
+        if accum == None or node.value < accum:
+            return node.value
         return accum
 
 
@@ -95,11 +95,11 @@ class TreeSearcherDepthIterative(TreeSearcherIterative):
 
         return False
 
-    def _reduce(self, reduce_func, accum):
+    def _reduce(self, reduce_func: Callable, accum):
         stack = [self.tree.root]
         while len(stack) > 0:
             current_node = stack.pop()
-            accum = reduce_func(current_node.value, accum)
+            accum = reduce_func(current_node, accum)
             if current_node.right:
                 stack.append(current_node.right)
             if current_node.left:
@@ -157,6 +157,26 @@ class TreeSearcherDepthRecursive(TreeSearcher):
             values.append(self._node_min(node.right))
 
         return min(values)
+    
+    def max_root_to_leaf_sum(self):
+        return self._max_root_to_leaf_sum_rec(self.tree.root, 0)
+
+    def _max_root_to_leaf_sum_rec(self, node: Node, accum: float):
+        new_accum: float = accum + node.value
+        
+        if node.left is None and node.right is None:
+            return new_accum
+
+        if node.left is None:
+            return self._max_root_to_leaf_sum_rec(node.right, new_accum)
+        
+        if node.right is None:
+            return self._max_root_to_leaf_sum_rec(node.left, new_accum)
+        
+        return max([
+            self._max_root_to_leaf_sum_rec(node.left, new_accum),
+            self._max_root_to_leaf_sum_rec(node.right, new_accum),
+        ])
 
 
 class TreeSearcherBreadthIterative(TreeSearcherIterative):
@@ -180,7 +200,7 @@ class TreeSearcherBreadthIterative(TreeSearcherIterative):
         
         return values
 
-    def _reduce(self, reduce_func, accum):
+    def _reduce(self, reduce_func: Callable, accum):
         queue = Queue()
         queue.enqueue(self.tree.root)
         while not queue.is_empty():
@@ -189,7 +209,7 @@ class TreeSearcherBreadthIterative(TreeSearcherIterative):
                 queue.enqueue(current_node.left)
             if current_node.right is not None:
                 queue.enqueue(current_node.right)
-            accum = reduce_func(current_node.value, accum)
+            accum = reduce_func(current_node, accum)
 
         
         return accum
@@ -271,7 +291,7 @@ b_n = Node(2)
 c_n = Node(3)
 d_n = Node(4)
 e_n = Node(7)
-f_n = Node(12)
+f_n = Node(50)
 g_n = Node(5)
 h_n = Node(3)
 i_n = Node(8)
@@ -325,3 +345,6 @@ if __name__ == "__main__":
     print(_min)
     _min = TreeSearcherDepthRecursive(tree_n).min()
     print(_min)
+
+    max_branch = TreeSearcherDepthRecursive(tree_n).max_root_to_leaf_sum()
+    print(max_branch)
